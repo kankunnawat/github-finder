@@ -1,21 +1,26 @@
 import { FaCodepen, FaStore, FaUserFriends, FaUsers } from 'react-icons/fa'
+import { useEffect, useContext } from 'react'
+import { useParams } from 'react-router-dom'
 import { Link } from 'react-router-dom'
 import Spinner from '../components/layout/Spinner'
 import RepoList from '../components/repos/RepoList'
-import { useEffect, useContext } from 'react'
 import GithubContext from '../context/github/GithubContext'
-import { useParams } from 'react-router-dom'
+import { getUserAndRepos } from '../context/github/GithubActions'
 
 function User() {
-  const { getUser, user, loading, getUserRepos, repos } =
-    useContext(GithubContext)
+  const { user, loading, repos, dispatch } = useContext(GithubContext)
 
   const params = useParams()
 
   useEffect(() => {
-    getUser(params.login)
-    getUserRepos(params.login)
-  }, [])
+    dispatch({ type: 'SET_LOADING' })
+    const getUserData = async () => {
+      const userData = await getUserAndRepos(params.login)
+      dispatch({ type: 'GET_USER_AND_REPOS', payload: userData })
+    }
+
+    getUserData()
+  }, [dispatch, params.login])
 
   const {
     name,
@@ -43,11 +48,12 @@ function User() {
       <div className="w-full mx-auto lg:w-10/12">
         <div className="mb-4">
           <Link to="/" className="btn btn-ghost">
-            Back to Search
+            Back To Search
           </Link>
         </div>
+
         <div className="grid grid-cols-1 xl:grid-cols-3 lg:grid-cols-3 md:grid-cols-3 mb-8 md:gap-8">
-          <div className="custom-card-image mb-6 md:mb-0 lg:mb-0 xl:mb-0">
+          <div className="custom-card-image mb-6 md:mb-0">
             <div className="rounded-lg shadow-xl card image-full">
               <figure>
                 <img src={avatar_url} alt="" />
@@ -58,6 +64,7 @@ function User() {
               </div>
             </div>
           </div>
+
           <div className="col-span-2">
             <div className="mb-6">
               <h1 className="text-3xl card-title">
@@ -91,7 +98,6 @@ function User() {
                 <div className="stat">
                   <div className="stat-title text-md">Website</div>
                   <div className="text-lg stat-value">
-                    {' '}
                     <a
                       href={`https://${blog}`}
                       target="_blank"
@@ -106,7 +112,6 @@ function User() {
                 <div className="stat">
                   <div className="stat-title text-md">Twitter</div>
                   <div className="text-lg stat-value">
-                    {' '}
                     <a
                       href={`https://twitter.com/${twitter_username}`}
                       target="_blank"
@@ -120,6 +125,7 @@ function User() {
             </div>
           </div>
         </div>
+
         <div className="w-full py-5 mb-6 rounded-lg shadow-md bg-base-100 stats">
           <div className="stat">
             <div className="stat-figure text-secondary">
@@ -130,6 +136,7 @@ function User() {
               {followers}
             </div>
           </div>
+
           <div className="stat">
             <div className="stat-figure text-secondary">
               <FaUserFriends className="text-3xl md:text-5xl" />
@@ -160,6 +167,7 @@ function User() {
             </div>
           </div>
         </div>
+
         <RepoList repos={repos} />
       </div>
     </>
